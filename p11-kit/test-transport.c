@@ -51,6 +51,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/wait.h>
+#ifdef __OS2__
+#include <libcx/net.h>
+#endif
 #endif
 #include <stdlib.h>
 #include <stdio.h>
