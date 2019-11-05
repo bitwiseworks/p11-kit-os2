@@ -408,12 +408,26 @@ load_module_from_file_inlock (const char *name,
 	Module *mod;
 	Module *prev;
 	CK_RV rv;
+#ifdef __OS2__
+	int len;
+#endif
 
 	assert (path != NULL);
 	assert (result != NULL);
 
 	mod = alloc_module_unlocked ();
 	return_val_if_fail (mod != NULL, CKR_HOST_MEMORY);
+
+#ifdef __OS2__
+	p11_message("loading module from path: %s", path);
+	len = strlen(path);
+	if (len > 3 && _stricmp(path + (len - 3), ".so") == 0) {
+		expand = (char *)path;
+		expand[len-3] = '\0';
+		path = realloc((char *)path, len + 1);
+		strncat((char *)path, ".dll", 4);
+       }
+#endif
 
 	if (!p11_path_absolute (path)) {
 		p11_debug ("module path is relative, loading from: %s", P11_MODULE_PATH);
