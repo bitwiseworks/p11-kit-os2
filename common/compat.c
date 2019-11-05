@@ -206,7 +206,11 @@ p11_mmap_open (const char *path,
 	if (map == NULL)
 		return NULL;
 
+#ifdef __OS2__
+	map->fd = open (path, O_RDONLY | O_CLOEXEC | O_BINARY);
+#else
 	map->fd = open (path, O_RDONLY | O_CLOEXEC);
+#endif
 	if (map->fd == -1) {
 		free (map);
 		return NULL;

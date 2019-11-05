@@ -54,7 +54,7 @@ test_base (void)
 		{ "folder/", "folder" },
 		{ "/", "" },
 		{ "this", "this" },
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 		{ "\\this\\is\\a\\path", "path" },
 		{ "\\this\\is\\a\\folder\\", "folder" },
 		{ "C:\\this\\is\\a\\path", "path" },
@@ -87,7 +87,7 @@ test_base (void)
 static void
 test_build (void)
 {
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	assert_str_eq_free ("/root/second",
 	                    p11_path_build ("/root", "second", NULL));
 	assert_str_eq_free ("/root/second",
@@ -118,6 +118,11 @@ test_expand (void)
 	char *path;
 
 #ifdef OS_UNIX
+#ifdef __OS2__
+	putenv ("HOME=C:\\Users\\blah");
+	assert_str_eq_free ("C:\\Users\\blah\\my/path",
+	                    p11_path_expand ("~/my/path"));
+#endif
 	putenv ("HOME=/home/blah");
 	assert_str_eq_free ("/home/blah/my/path",
 	                    p11_path_expand ("~/my/path"));
@@ -147,6 +152,9 @@ static void
 test_absolute (void)
 {
 #ifdef OS_UNIX
+#ifdef __OS2__
+	assert (p11_path_absolute ("C:\\home"));
+#endif
 	assert (p11_path_absolute ("/home"));
 	assert (!p11_path_absolute ("home"));
 #else /* OS_WIN32 */

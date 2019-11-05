@@ -63,7 +63,7 @@
 char *
 p11_path_base (const char *path)
 {
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 	const char *delims = "/\\";
 #else
 	const char *delims = "/";
@@ -97,7 +97,7 @@ static inline bool
 is_path_component_or_null (char ch)
 {
 	return (ch == '\0' || ch == '/'
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 			|| ch == '\\'
 #endif
 		);
@@ -188,7 +188,7 @@ p11_path_absolute (const char *path)
 	return_val_if_fail (path != NULL, false);
 
 	return (path[0] == '/')
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 	|| (path[0] != '\0' && path[1] == ':' && path[2] == '\\')
 #endif
 	;
@@ -198,7 +198,7 @@ char *
 p11_path_build (const char *path,
                 ...)
 {
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 	const char delim = '\\';
 #else
 	const char delim = '/';
