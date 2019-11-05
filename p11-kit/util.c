@@ -224,6 +224,12 @@ _p11_set_progname_unlocked (const char *progname)
 		progname = "";
 
 	strncpy (p11_my_progname, progname, sizeof (p11_my_progname));
+#ifdef __OS2__
+	int length;
+	length = strlen(p11_my_progname);
+	if (length > 4 && _stricmp(p11_my_progname + (length - 4), ".exe") == 0)
+		p11_my_progname[length - 4] = '\0';
+#endif
 	p11_my_progname[sizeof (p11_my_progname) - 1] = 0;
 }
 
