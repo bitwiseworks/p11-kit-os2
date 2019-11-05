@@ -235,8 +235,13 @@ typedef void * dl_module_t;
 
 #define p11_dl_open(f) \
 	(dlopen ((f), RTLD_LOCAL | RTLD_NOW))
+#ifdef __OS2__
+#define p11_dl_symbol(d, s) \
+	(dlsym ((d), ("_" s)))
+#else
 #define p11_dl_symbol(d, s) \
 	(dlsym ((d), (s)))
+#endif
 
 char * p11_dl_error (void);
 
