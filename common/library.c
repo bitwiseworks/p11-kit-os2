@@ -64,6 +64,10 @@ static p11_local * _p11_library_get_thread_local (void);
 p11_mutex_t p11_library_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 p11_mutex_t p11_virtual_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#elif __OS2__
+p11_mutex_t p11_library_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
+
+p11_mutex_t p11_virtual_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 #else
 p11_mutex_t p11_library_mutex;
 
