@@ -106,6 +106,16 @@ p11_get_upeer_id (int cfd, uid_t *uid, uid_t *gid, pid_t *pid)
 
 	if (ret)
 		return -1;
+
+#elif __OS2__
+	if (uid)
+		*uid = 0;
+
+	if (gid)
+		*gid = 0;
+
+	if (pid)
+		*pid = -1;
 #else
 #error "Unsupported UNIX variant"
 #endif

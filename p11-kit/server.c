@@ -62,6 +62,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#ifdef __OS2__
+#include <libcx/net.h>
+#endif
 #ifdef WITH_SYSTEMD
 #include <systemd/sd-daemon.h>
 #endif
@@ -314,6 +317,7 @@ check_credentials (int fd,
 	uid_t tuid;
 	gid_t tgid;
 
+#ifndef __OS2__
 	rc = p11_get_upeer_id (fd, &tuid, &tgid, NULL);
 	if (rc == -1) {
 		p11_message_err (errno, "could not check uid from socket");
@@ -334,6 +338,7 @@ check_credentials (int fd,
 		close (fd);
 		return false;
 	}
+#endif
 
 	return true;
 }
@@ -453,7 +458,11 @@ server_loop (Server *server,
 		FD_ZERO (&rd_set);
 		FD_SET (server->socket, &rd_set);
 
+#ifdef __OS2__
+		ret = select (server->socket + 1, &rd_set, NULL, NULL, timeout);
+#else
 		ret = pselect (server->socket + 1, &rd_set, NULL, NULL, timeout, &emptyset);
+#endif
 		if (ret == -1 && errno == EINTR)
 			continue;
 
