@@ -117,12 +117,7 @@ test_expand (void)
 {
 	char *path;
 
-#ifdef OS_UNIX
-#ifdef __OS2__
-	putenv ("HOME=C:\\Users\\blah");
-	assert_str_eq_free ("C:\\Users\\blah\\my/path",
-	                    p11_path_expand ("~/my/path"));
-#endif
+#if defined(OS_UNIX) && !defined(__OS2__)
 	putenv ("HOME=/home/blah");
 	assert_str_eq_free ("/home/blah/my/path",
 	                    p11_path_expand ("~/my/path"));
@@ -151,10 +146,7 @@ test_expand (void)
 static void
 test_absolute (void)
 {
-#ifdef OS_UNIX
-#ifdef __OS2__
-	assert (p11_path_absolute ("C:\\home"));
-#endif
+#if defined(OS_UNIX) && !defined(__OS2__)
 	assert (p11_path_absolute ("/home"));
 	assert (!p11_path_absolute ("home"));
 #else /* OS_WIN32 */
