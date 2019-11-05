@@ -531,6 +531,16 @@ echo $PACKAGE_VERSION | tr '.' ' ' | while read major minor unused; do
 done
 
 case "$host" in
+*os2*)
+	PACKAGE_PATCH=`echo $PACKAGE_VERSION | cut -d. -f3`
+	if test x"$PACKAGE_PATCH" = x; then
+		PACKAGE_PATCH=0
+	fi
+	AC_SUBST(PACKAGE_PATCH)
+	;;
+esac
+
+case "$host" in
 *-*-darwin*)
 	# It seems like libtool lies about this see:
 	# https://bugs.freedesktop.org/show_bug.cgi?id=57714
