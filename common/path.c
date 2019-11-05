@@ -189,7 +189,7 @@ p11_path_absolute (const char *path)
 
 	return (path[0] == '/')
 #if defined(OS_WIN32) || defined(__OS2__)
-	|| (path[0] != '\0' && path[1] == ':' && path[2] == '\\')
+	|| (path[0] != '\0' && path[1] == ':' && (path[2] == '\\' || path[2] == '/'))
 #endif
 	;
 }
