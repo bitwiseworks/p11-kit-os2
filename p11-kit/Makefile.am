@@ -86,6 +86,8 @@ libp11_kit_la_CFLAGS = $(COMMON_CFLAGS)
 
 libp11_kit_la_LDFLAGS = \
 	-no-undefined \
+	-buildlevel '$(BUILDLEVEL_INFO)' \
+	-shortname p11kit \
 	-version-info $(P11KIT_LT_RELEASE)
 
 if HAVE_LD_VERSION_SCRIPT
@@ -202,6 +204,8 @@ p11_kit_client_la_LDFLAGS = \
 	-no-undefined -module -avoid-version \
 	-version-info $(P11KIT_LT_RELEASE) \
 	-export-symbols-regex '^C_GetFunctionList' \
+	-buildlevel '$(BUILDLEVEL_INFO)' \
+	-shortname p11kcln \
 	$(NULL)
 
 p11_kit_client_la_CFLAGS = $(COMMON_CFLAGS)

@@ -62,6 +62,8 @@ p11_kit_trust_la_LDFLAGS = \
 	-no-undefined -module -avoid-version \
 	-version-info $(P11KIT_LT_RELEASE) \
 	-export-symbols-regex 'C_GetFunctionList' \
+	-buildlevel '$(BUILDLEVEL_INFO)' \
+	-shortname p11ktru \
 	$(NULL)
 
 p11_kit_trust_la_SOURCES = $(TRUST_SRCS) trust/module-init.c
