@@ -49,6 +49,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef __OS2__
+#include <io.h>
+#endif
 
 struct _p11_save_file {
 	char *bare;
@@ -115,6 +118,9 @@ p11_save_open_file (const char *path,
 		return NULL;
 	}
 
+#ifdef __OS2__
+	setmode(fd, O_BINARY);
+#endif
 	file = calloc (1, sizeof (p11_save_file));
 	return_val_if_fail (file != NULL, NULL);
 	file->temp = temp;
@@ -184,7 +190,7 @@ dir_free (p11_save_dir *dir) {
 	free (dir);
 }
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 
 static int
 on_unique_try_link (void *data,
@@ -210,7 +216,15 @@ on_unique_try_rename (void *data,
 {
 	p11_save_file *file = data;
 
+#ifdef __OS2__
+	struct stat st;
+	if (!stat(path, &st))
+		errno = EEXIST;
+
+	if (errno == EEXIST || rename (file->temp, path) < 0) {
+#else
 	if (rename (file->temp, path) < 0) {
+#endif
 		if (errno == EEXIST)
 			return 0; /* Continue trying other names */
 		p11_message ("couldn't complete writing of file: %s", path);
@@ -249,7 +263,7 @@ p11_save_finish_file (p11_save_file *file,
 		p11_message_err (errno, "couldn't write file: %s", file->temp);
 		ret = false;
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	/* Set the mode of the file, readable by everyone, but not writable */
 	} else if (chmod (file->temp, S_IRUSR | S_IRGRP | S_IROTH) < 0) {
 		p11_message_err (errno, "couldn't set file permissions: %s", file->temp);
@@ -300,7 +314,12 @@ p11_save_finish_file (p11_save_file *file,
 		}
 
 		if (ret == true && strcmp (file->temp, path) != 0) {
+#ifdef __OS2__
+			struct stat st;
+			if (!stat(path, &st) || rename (file->temp, path) < 0) {
+#else
 			if (rename (file->temp, path) < 0) {
+#endif
 				p11_message_err (errno, "couldn't complete writing file: %s", path);
 				ret = false;
 			}

@@ -39,6 +39,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+// this is needed to have O_BINARY defined
+#ifdef __OS2__
+#include <fcntl.h>
+#endif
 
 #if !defined(__cplusplus) && (__GNUC__ > 2)
 #define GNUC_PRINTF(x, y) __attribute__((__format__(__printf__, x, y)))
