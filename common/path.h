@@ -37,7 +37,7 @@
 
 #include "compat.h"
 
-#ifdef OS_WIN32
+#if defined(OS_WIN32) || defined(__OS2__)
 #define P11_PATH_SEP   ";"
 #define P11_PATH_SEP_C ';'
 #else
