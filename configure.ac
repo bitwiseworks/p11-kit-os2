@@ -594,7 +594,7 @@ AC_OUTPUT
 
 # Format paths arguments which should wrap correctly in the output
 indent='\n                                     '
-trust_status=$(echo "$with_trust_paths" | sed -e "s/:/$indent/g")
+trust_status=$(echo "$with_trust_paths" | sed -e "s/$PATH_SEPARATOR/$indent/g")
 
 AC_MSG_NOTICE([build options:
 
