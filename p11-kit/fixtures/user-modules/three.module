@@ -1,5 +1,6 @@
 
-module: mock-three.so
+#module: mock-three.so
+module: mock-thr.so
 setting: user3
 
 enable-in: test-enable

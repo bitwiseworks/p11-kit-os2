@@ -1,4 +1,5 @@
 
-module: mock-seven.so
+#module: mock-seven.so
+module: mock-sev.so
 critical: yes
 enable-in: test-modules

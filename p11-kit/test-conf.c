@@ -288,7 +288,11 @@ test_load_modules_merge (void)
 
 	config = p11_dict_get (configs, "three");
 	assert_ptr_not_null (config);
+#ifdef __OS2__
+	assert_str_eq ("mock-thr.so", p11_dict_get (config, "module"));
+#else
 	assert_str_eq ("mock-three.so", p11_dict_get (config, "module"));
+#endif
 	assert_str_eq (p11_dict_get (config, "setting"), "user3");
 
 	p11_dict_free (configs);
@@ -350,7 +354,11 @@ test_load_modules_user_only (void)
 
 	config = p11_dict_get (configs, "three");
 	assert_ptr_not_null (config);
+#ifdef __OS2__
+	assert_str_eq ("mock-thr.so", p11_dict_get (config, "module"));
+#else
 	assert_str_eq ("mock-three.so", p11_dict_get (config, "module"));
+#endif
 	assert_str_eq (p11_dict_get (config, "setting"), "user3");
 
 	p11_dict_free (configs);

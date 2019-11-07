@@ -1,5 +1,6 @@
 
-module: mock-four.so
+#module: mock-four.so
+module: mock-fou.so
 disable-in: test-disable, test-other
 priority: 4
 trust-policy: no

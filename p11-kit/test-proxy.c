@@ -233,8 +233,13 @@ teardown (void *unused)
 #define TWO_MODULE "module: mock-two" SHLEXT "\n"
 #define ENABLED "enable-in: test-proxy, p11-kit-proxy\n"
 #define DISABLED "disable-in: p11-kit-proxy\n"
+#ifdef __OS2__
+#define EIGHT_MODULE "module: mock-eig" SHLEXT "\n"
+#define NINE_MODULE "module: mock-nin" SHLEXT "\n"
+#else
 #define EIGHT_MODULE "module: mock-eight" SHLEXT "\n"
 #define NINE_MODULE "module: mock-nine" SHLEXT "\n"
+#endif
 
 static CK_ULONG
 load_modules_and_count_slots (void)
@@ -465,7 +470,7 @@ main (int argc,
 	p11_kit_be_quiet ();
 	p11_test (test_initialize_finalize, "/proxy/initialize-finalize");
 	p11_test (test_initialize_multiple, "/proxy/initialize-multiple");
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__OS2__)
 	p11_test (test_initialize_child, "/proxy/initialize-child");
 #endif
 

@@ -300,7 +300,7 @@ main (int argc,
 	p11_test (test_separate_close_all_sessions, "/managed/test_separate_close_all_sessions");
 	p11_test (test_max_session_load, "/managed/test_max_session_load");
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	p11_test (test_fork_and_reinitialize, "/managed/fork-and-reinitialize");
 #endif
 

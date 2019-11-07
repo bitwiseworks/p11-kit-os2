@@ -1256,7 +1256,11 @@ test_simultaneous_functions (void)
 {
 	CK_FUNCTION_LIST real_module;
 	CK_FUNCTION_LIST *rpc_module;
+#ifdef __OS2__
+	const int num_threads = 64;
+#else
 	const int num_threads = 128;
+#endif
 	p11_thread_t threads[num_threads];
 	int i, ret;
 
@@ -1390,7 +1394,7 @@ main (int argc,
 	p11_test (test_get_slot_list_no_device, "/rpc/get-slot-list-no-device");
 	p11_test (test_simultaneous_functions, "/rpc/simultaneous-functions");
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	p11_test (test_fork_and_reinitialize, "/rpc/fork-and-reinitialize");
 #endif
 

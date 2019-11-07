@@ -88,7 +88,11 @@ setup_remote (void *unused)
 	setenv ("P11_KIT_PRIVATEDIR", BUILDDIR "/p11-kit", 1);
 	data = "remote: |" BUILDDIR "/p11-kit/p11-kit" EXEEXT " remote " P11_MODULE_PATH "/mock-two" SHLEXT "\n";
 	p11_test_file_write (test.user_modules, "remote.module", data, strlen (data));
+#ifdef __OS2__
+	data = "remote: |" BUILDDIR "/p11-kit/p11-kit" EXEEXT " remote " P11_MODULE_PATH "/mock-fiv" SHLEXT "\nx-init-reserved: initialize-arg";
+#else
 	data = "remote: |" BUILDDIR "/p11-kit/p11-kit" EXEEXT " remote " P11_MODULE_PATH "/mock-five" SHLEXT "\nx-init-reserved: initialize-arg";
+#endif
 	p11_test_file_write (test.user_modules, "init-arg.module", data, strlen (data));
 
 	p11_kit_override_system_files (NULL, test.user_config,
@@ -432,13 +436,13 @@ main (int argc,
 	p11_test (test_basic_exec_with_init_arg, "/transport/init-arg");
 	p11_test (test_simultaneous_functions, "/transport/simultaneous-functions");
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	p11_test (test_fork_and_reinitialize, "/transport/fork-and-reinitialize");
 #endif
 
 	test_mock_add_tests ("/transport");
 
-#ifdef OS_UNIX
+#if defined(OS_UNIX) && !defined(__OS2__)
 	p11_fixture (setup_remote_unix, teardown_remote_unix);
 	p11_test (test_basic_exec, "/transport/unix/basic");
 #endif

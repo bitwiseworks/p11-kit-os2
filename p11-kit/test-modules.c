@@ -222,7 +222,11 @@ test_filename (void)
 	 */
 
 	modules = initialize_and_get_modules ();
+#ifdef __OS2__
+	assert (lookup_module_with_filename (modules, "mock-fou" SHLEXT) != NULL);
+#else
 	assert (lookup_module_with_filename (modules, "mock-four" SHLEXT) != NULL);
+#endif
 	finalize_and_free_modules (modules);
 }
 
