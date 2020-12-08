@@ -233,6 +233,7 @@ teardown (void *unused)
 #define TWO_MODULE "module: mock-two" SHLEXT "\n"
 #define ENABLED "enable-in: test-proxy, p11-kit-proxy\n"
 #define DISABLED "disable-in: p11-kit-proxy\n"
+#define ENABLED_PREFIX "enable-in: test-proxy-suffix, p11-kit-proxy-suffix, test-proxy, p11-kit-proxy\n"
 #ifdef __OS2__
 #define EIGHT_MODULE "module: mock-eig" SHLEXT "\n"
 #define NINE_MODULE "module: mock-nin" SHLEXT "\n"
@@ -240,6 +241,7 @@ teardown (void *unused)
 #define EIGHT_MODULE "module: mock-eight" SHLEXT "\n"
 #define NINE_MODULE "module: mock-nine" SHLEXT "\n"
 #endif
+#define TEN_MODULE "module: mock-ten" SHLEXT "\n"
 
 static CK_ULONG
 load_modules_and_count_slots (void)
@@ -316,6 +318,12 @@ test_disable (void)
 	p11_test_file_write (test.directory, "two.module", TWO_MODULE DISABLED, strlen (TWO_MODULE DISABLED));
 	disabled = load_modules_and_count_slots ();
 	assert_num_cmp (disabled, <, count);
+
+	p11_test_file_write (test.directory, "one.module", ONE_MODULE ENABLED_PREFIX, strlen (ONE_MODULE ENABLED_PREFIX));
+	p11_test_file_write (test.directory, "two.module", TWO_MODULE, strlen (TWO_MODULE));
+	enabled = load_modules_and_count_slots ();
+	assert_num_eq (enabled, count);
+
 }
 
 static void
@@ -384,6 +392,43 @@ test_slot_event (void)
 	rv = proxy->C_WaitForSlotEvent (CKF_DONT_BLOCK, &slot, NULL);
 	assert_num_eq (rv, CKR_OK);
 	assert_num_eq (slot, slots[0]);
+
+	rv = proxy->C_Finalize (NULL);
+	assert_num_eq (rv, CKR_OK);
+
+	p11_proxy_module_cleanup ();
+}
+
+static void
+test_reuse_slots (void)
+{
+	CK_FUNCTION_LIST_PTR proxy;
+	CK_SLOT_ID slots[32];
+	CK_ULONG count = 32;
+	CK_RV rv;
+
+	p11_test_file_write (test.directory, "ten.module", TEN_MODULE, strlen (TEN_MODULE));
+
+	rv = C_GetFunctionList (&proxy);
+	assert (rv == CKR_OK);
+
+	assert (p11_proxy_module_check (proxy));
+
+	rv = proxy->C_Initialize (NULL);
+	assert (rv == CKR_OK);
+
+	rv = proxy->C_GetSlotList (CK_FALSE, slots, &count);
+	assert (rv == CKR_OK);
+	assert_num_eq (count, 1);
+
+	count = 32;
+
+	rv = proxy->C_GetSlotList (CK_FALSE, slots, &count);
+	assert (rv == CKR_OK);
+	assert_num_eq (count, 2);
+
+	/* Make sure the assigned slot IDs are different */
+	assert_num_cmp (slots[0], !=, slots[1]);
 
 	rv = proxy->C_Finalize (NULL);
 	assert_num_eq (rv, CKR_OK);
@@ -479,6 +524,7 @@ main (int argc,
 	p11_test (test_no_slot, "/proxy/no-slot");
 	p11_test (test_slot_appear, "/proxy/slot-appear");
 	p11_test (test_slot_event, "/proxy/slot-event");
+	p11_test (test_reuse_slots, "/proxy/reuse-slots");
 
 	test_mock_add_tests ("/proxy");
 

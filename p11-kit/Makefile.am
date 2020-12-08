@@ -139,7 +139,7 @@ p11-kit/uri.gnu.c: p11-kit/uri.h
 p11-kit/iter.gnu.c: p11-kit/iter.h
 p11-kit/pin.gnu.c: p11-kit/pin.h
 
-SUFFIXES = .h .gnu.c
+SUFFIXES += .h .gnu.c
 .h.gnu.c:
 	$(AM_V_GEN) src=$<; dst=$@; rm -f $@-t $@ && \
 	{ echo '/* DO NOT EDIT! GENERATED AUTOMATICALLY! */'; \
@@ -249,6 +249,10 @@ p11_kit_p11_kit_LDADD = \
 	libp11-common.la \
 	$(LTLIBINTL) \
 	$(NULL)
+
+if WITH_BASH_COMPLETION
+bashcomp_DATA += bash-completion/p11-kit
+endif
 
 private_PROGRAMS += p11-kit/p11-kit-remote
 
@@ -432,7 +436,8 @@ check_LTLIBRARIES += \
 	mock-five.la \
 	mock-seven.la \
 	mock-eight.la \
-	mock-nine.la
+	mock-nine.la \
+	mock-ten.la
 
 mock_one_la_SOURCES = p11-kit/mock-module-ep.c
 mock_one_la_LIBADD = libp11-test.la libp11-common.la
@@ -474,6 +479,10 @@ mock_eight_la_LIBADD = $(mock_one_la_LIBADD)
 mock_nine_la_SOURCES = p11-kit/mock-module-ep7.c
 mock_nine_la_LDFLAGS = $(mock_one_la_LDFLAGS)
 mock_nine_la_LIBADD = $(mock_one_la_LIBADD)
+
+mock_ten_la_SOURCES = p11-kit/mock-module-ep8.c
+mock_ten_la_LDFLAGS = $(mock_one_la_LDFLAGS)
+mock_ten_la_LIBADD = $(mock_one_la_LIBADD)
 
 EXTRA_DIST += \
 	p11-kit/fixtures \

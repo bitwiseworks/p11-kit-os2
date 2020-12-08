@@ -1,7 +1,7 @@
 AC_PREREQ(2.61)
 
 AC_INIT([p11-kit],
-	[0.23.18],
+	[0.23.21],
 	[https://github.com/p11-glue/p11-kit/issues],
 	[p11-kit],
 	[https://p11-glue.github.io/p11-glue/p11-kit.html])
@@ -23,7 +23,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([build/m4])
 AC_CONFIG_AUX_DIR([build/litter])
 AC_REQUIRE_AUX_FILE([tap-driver.sh])
-AM_INIT_AUTOMAKE([1.12 foreign subdir-objects])
+AM_INIT_AUTOMAKE([1.12 dist-xz no-dist-gzip foreign subdir-objects])
 AM_SANITY_CHECK
 AM_MAINTAINER_MODE([enable])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])],)
@@ -47,6 +47,10 @@ PKG_PROG_PKG_CONFIG
 
 LINGUAS=""
 AM_GNU_GETTEXT([external], [need-ngettext])
+AM_GNU_GETTEXT_VERSION([0.19.8])
+m4_ifdef([AM_GNU_GETTEXT_REQUIRE_VERSION],[
+AM_GNU_GETTEXT_REQUIRE_VERSION([0.19.8])
+])
 
 if test "$enable_static" = "yes"; then
 	AC_MSG_ERROR([p11-kit cannot be used as a static library])
@@ -138,7 +142,7 @@ if test "$os_unix" = "yes"; then
 		[AC_MSG_ERROR([could not find required gmtime_r() function])])
 
 	# Check if these are declared and/or available to link against
-	AC_CHECK_DECLS([program_invocation_short_name]), [], [], [#include <errno.h>])
+	AC_CHECK_DECLS([program_invocation_short_name], [], [], [#include <errno.h>])
 	AC_MSG_CHECKING([whether program_invocation_short_name is available])
 	AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <errno.h>]],
 	                                [[program_invocation_short_name = "test";]])],
@@ -154,6 +158,21 @@ if test "$os_unix" = "yes"; then
 	AC_CHECK_TYPES([sighandler_t, sig_t, __sighandler_t], [], [],
 		[[#include <sys/types.h>
 		  #include <signal.h>]])
+
+	AC_MSG_CHECKING([whether vsock support is available])
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <sys/socket.h>
+					  #include <linux/vm_sockets.h>]],
+	                                [[struct sockaddr_vm sa = {
+					  .svm_family = AF_VSOCK,
+					  .svm_cid = VMADDR_CID_ANY,
+					  };
+					  (void)&sa;
+					  return 0;]])],
+	               [AC_DEFINE([HAVE_VSOCK], [1],
+	                          [Whether vsock support available])
+	                AC_MSG_RESULT([yes])],
+	               [AC_MSG_RESULT([no])])
+
 fi
 
 # These are thngs we can work around
@@ -218,6 +237,7 @@ AS_IF([test "$with_libtasn1" != "no"], [
 	)
 	AC_SUBST(LIBTASN1_CFLAGS)
 	AC_SUBST(LIBTASN1_LIBS)
+	AC_PATH_PROG([ASN1PARSER], [asn1Parser])
 	with_libtasn1="yes"
 	AC_DEFINE_UNQUOTED(WITH_ASN1, 1, [Build with libtasn1 and certificate support])
 ])
@@ -580,6 +600,22 @@ AS_IF([test "$with_systemd" != "no"], [
 ])
 
 AM_CONDITIONAL(WITH_SYSTEMD, [test "$with_systemd" = "yes"])
+
+# --------------------------------------------------------------------
+# bash completion
+
+AC_ARG_WITH([bash-completion],
+            AS_HELP_STRING([--without-bash-completion],
+                           [Don't install bash completion files]))
+
+AS_IF([test "$with_bash_completion" != "no"], [
+	PKG_CHECK_VAR([bashcompdir], [bash-completion], [completionsdir],
+		[with_bash_completion=yes])
+	AC_SUBST(bashcompdir)
+])
+
+AM_CONDITIONAL(WITH_BASH_COMPLETION, [test "$with_bash_completion" = "yes"])
+
 
 AC_CONFIG_FILES([Makefile
 	doc/Makefile

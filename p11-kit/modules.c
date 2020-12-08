@@ -510,17 +510,27 @@ is_string_in_list (const char *list,
                    const char *string)
 {
 	const char *where;
+	const char *start = list;
 
-	where = strstr (list, string);
-	if (where == NULL)
-		return false;
+	while (*start != '\0') {
+		where = strstr (start, string);
+		if (where == NULL)
+			return false;
 
-	/* Has to be at beginning/end of string, and delimiter before/after */
-	if (where != list && !is_list_delimiter (*(where - 1)))
-		return false;
+		/* Has to be at beginning/end of string, and delimiter before/after */
+		if (where != list && !is_list_delimiter (*(where - 1))) {
+			start += strlen (string);
+			continue;
+		}
 
-	where += strlen (string);
-	return (*where == '\0' || is_list_delimiter (*where));
+		where += strlen (string);
+		if (*where == '\0' || is_list_delimiter (*where)) {
+			return true;
+		}
+		start = where;
+	}
+
+	return false;
 }
 
 static bool
@@ -1006,7 +1016,7 @@ finalize_registered_inlock_reentrant (void)
 
 	/* WARNING: This function must be reentrant */
 
-	to_finalize = calloc (p11_dict_size (gl.unmanaged_by_funcs), sizeof (Module *));
+	to_finalize = calloc (p11_dict_size (gl.unmanaged_by_funcs) + 1, sizeof (Module *));
 	if (!to_finalize)
 		return CKR_HOST_MEMORY;
 
@@ -1644,7 +1654,7 @@ managed_steal_sessions_inlock (p11_dict *sessions,
 	assert (sessions != NULL);
 	assert (count != NULL);
 
-	stolen = calloc (p11_dict_size (sessions), sizeof (CK_SESSION_HANDLE));
+	stolen = calloc (p11_dict_size (sessions) + 1, sizeof (CK_SESSION_HANDLE));
 	return_val_if_fail (stolen != NULL, NULL);
 
 	at = 0;

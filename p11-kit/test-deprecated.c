@@ -475,6 +475,7 @@ test_load_and_initialize (void)
 	assert (rv == CKR_OK);
 	assert (module != NULL);
 
+	memset (&info, 0, sizeof(info));
 	rv = (module->C_GetInfo) (&info);
 	assert (rv == CKR_OK);
 
@@ -485,10 +486,14 @@ test_load_and_initialize (void)
 	assert_num_eq (rv, CKR_OK);
 }
 
+extern bool p11_conf_force_user_config;
+
 int
 main (int argc,
       char *argv[])
 {
+	p11_conf_force_user_config = true;
+
 	p11_mutex_init (&race_mutex);
 	mock_module_init ();
 	p11_library_init ();

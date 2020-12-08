@@ -30,6 +30,7 @@ libp11_common_la_SOURCES = \
 	common/pkcs11.h common/pkcs11x.h common/pkcs11i.h \
 	common/runtime.c common/runtime.h \
 	common/url.c common/url.h \
+	common/vsock.c common/vsock.h \
 	common/init.h \
 	$(NULL)
 
@@ -128,5 +129,12 @@ common_frob_getauxval_LDADD = $(common_LIBS)
 
 common_frob_getenv_SOURCES = common/frob-getenv.c
 common_frob_getenv_LDADD = $(common_LIBS)
+
+if !OS_WIN32
+check_PROGRAMS += common/frob-getprogname
+
+common_frob_getprogname_SOURCES = common/frob-getprogname.c
+common_frob_getprogname_LDADD = $(common_LIBS)
+endif
 
 EXTRA_DIST += common/meson.build

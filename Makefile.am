@@ -21,12 +21,16 @@ check_PROGRAMS = $(c_tests)
 check_SCRIPTS = $(sh_tests)
 check_LTLIBRARIES =
 
+SUFFIXES =
+
 BUILT_SOURCES =
 
 CLEANFILES =
 
-EXTRA_DIST = HACKING meson.build meson_options.txt po/meson.build \
-	doc/manual/meson.build
+EXTRA_DIST = CONTRIBUTING.md meson.build meson_options.txt po/meson.build \
+	doc/manual/meson.build doc/manual/userdir.xml.in \
+	doc/manual/sysdir.xml.in doc/manual/version.xml.in \
+	bash-completion
 
 incdir = $(includedir)/p11-kit-1/p11-kit
 inc_HEADERS =
@@ -44,6 +48,8 @@ TESTS = $(c_tests) $(sh_tests)
 moduledir = $(p11_module_path)
 module_LTLIBRARIES =
 
+bashcomp_DATA =
+
 include common/Makefile.am
 include p11-kit/Makefile.am
 
@@ -58,6 +64,7 @@ ACLOCAL_AMFLAGS = -I build/m4
 DISTCHECK_CONFIGURE_FLAGS = \
 	--enable-doc \
 	--without-systemd \
+	--without-bash-completion \
 	--disable-coverage \
 	--enable-strict \
 	CFLAGS='-O2'

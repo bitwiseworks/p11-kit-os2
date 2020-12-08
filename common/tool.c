@@ -182,17 +182,15 @@ command_usage (const p11_tool_command *commands)
 static void
 verbose_arg (void)
 {
-	putenv ("P11_KIT_DEBUG=tool");
+	setenv ("P11_KIT_DEBUG", "tool", 0);
 	p11_message_loud ();
-	p11_debug_init ();
 }
 
 static void
 quiet_arg (void)
 {
-	putenv ("P11_KIT_DEBUG=");
+	setenv ("P11_KIT_DEBUG", "", 1);
 	p11_message_quiet ();
-	p11_debug_init ();
 }
 
 int
@@ -206,6 +204,9 @@ p11_tool_main (int argc,
 	bool skip;
 	int in, out;
 	int i;
+
+	/* Print messages by default. */
+	p11_message_loud ();
 
 	/*
 	 * Parse the global options. We rearrange the options as

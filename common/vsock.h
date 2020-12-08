@@ -1,6 +1,5 @@
 /*
- * Copyright (c) 2011 Collabora Ltd
- * Copyright (c) 2012 Stef Walter
+ * Copyright © 2020 Amazon.com, Inc. or its affiliates.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,70 +29,18 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  *
- *
- * CONTRIBUTORS
- *  Stef Walter <stef@thewalter.net>
+ * Author: David Woodhouse <dwmw2@infradead.org>
  */
 
-#include "library.h"
+#ifndef P11_VSOCK_H
+#define P11_VSOCK_H
 
-#ifndef P11_INIT_H
-#define P11_INIT_H
+#include "compat.h"
 
-#ifdef OS_UNIX
+bool                  p11_vsock_parse_addr    (const char *target,
+                                               unsigned int *cid,
+                                               unsigned int *port);
 
-void INIT (void);
+bool                  p11_vsock_get_local_cid (unsigned int *cid);
 
-void FINI (void);
-
-#ifdef __GNUC__
-__attribute__((constructor))
-#endif
-void
-INIT (void)
-{
-	p11_library_init ();
-}
-
-#ifdef __GNUC__
-__attribute__((destructor))
-#endif
-void
-FINI (void)
-{
-	CLEANUP;
-	p11_library_uninit ();
-}
-
-#endif /* OS_UNIX */
-
-#ifdef OS_WIN32
-
-BOOL WINAPI DllMain (HINSTANCE, DWORD, LPVOID);
-
-BOOL WINAPI
-DllMain (HINSTANCE instance,
-         DWORD reason,
-         LPVOID reserved)
-{
-	switch (reason) {
-	case DLL_PROCESS_ATTACH:
-		p11_library_init ();
-		break;
-	case DLL_THREAD_DETACH:
-		p11_library_thread_cleanup ();
-		break;
-	case DLL_PROCESS_DETACH:
-		CLEANUP;
-		p11_library_uninit ();
-		break;
-	default:
-		break;
-	}
-
-	return TRUE;
-}
-
-#endif /* OS_WIN32 */
-
-#endif /* P11_INIT_H */
+#endif /* P11_VSOCK_H */

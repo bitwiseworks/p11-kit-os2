@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2011 Collabora Ltd
- * Copyright (c) 2012 Stef Walter
+ * Copyright (c) 2012 Stefan Walter
+ * Copyright (c) 2020 Red Hat, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,70 +30,80 @@
  * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
  * DAMAGE.
  *
- *
- * CONTRIBUTORS
- *  Stef Walter <stef@thewalter.net>
+ * Author: Stef Walter <stef@thewalter.net>, Daiki Ueno, Anderson Sasaki
  */
 
-#include "library.h"
+#include "config.h"
 
-#ifndef P11_INIT_H
-#define P11_INIT_H
+#define CRYPTOKI_EXPORTS 1
+#include "pkcs11.h"
 
-#ifdef OS_UNIX
+#include "mock.h"
+#include "test.h"
 
-void INIT (void);
+#define MOCK_SLOT_THREE_ID 792
 
-void FINI (void);
+/* Update mock-module.h URIs when updating this */
 
-#ifdef __GNUC__
-__attribute__((constructor))
-#endif
-void
-INIT (void)
+static int called = 0;
+static CK_SLOT_ID last_id = 1;
+
+static CK_RV
+override_get_slot_list (CK_BBOOL token_present,
+                    CK_SLOT_ID_PTR slot_list,
+                    CK_ULONG_PTR count)
 {
-	p11_library_init ();
-}
+	if (count == NULL)
+		return CKR_ARGUMENTS_BAD;
 
-#ifdef __GNUC__
-__attribute__((destructor))
-#endif
-void
-FINI (void)
-{
-	CLEANUP;
-	p11_library_uninit ();
-}
+	/* For odd numbered calls, the module will return 1 slot with a slot ID
+	 * returned previously.
+	 *
+	 * For even numbered calls, the module will return 2 slots, being the new
+	 * slot put first in the list */
+	if (called % 2) {
+		if (slot_list == NULL) {
+			*count = 1;
+			return CKR_OK;
+		}
+		if (*count < 1) {
+			return CKR_BUFFER_TOO_SMALL;
+		}
 
-#endif /* OS_UNIX */
+		slot_list[0] = last_id;
+		*count = 1;
+	} else {
+		if (slot_list == NULL) {
+			*count = 2;
+			return CKR_OK;
+		}
 
-#ifdef OS_WIN32
+		if (*count < 2) {
+			return CKR_BUFFER_TOO_SMALL;
+		}
 
-BOOL WINAPI DllMain (HINSTANCE, DWORD, LPVOID);
+		slot_list[1] = last_id;
+		slot_list[0] = ++last_id;
 
-BOOL WINAPI
-DllMain (HINSTANCE instance,
-         DWORD reason,
-         LPVOID reserved)
-{
-	switch (reason) {
-	case DLL_PROCESS_ATTACH:
-		p11_library_init ();
-		break;
-	case DLL_THREAD_DETACH:
-		p11_library_thread_cleanup ();
-		break;
-	case DLL_PROCESS_DETACH:
-		CLEANUP;
-		p11_library_uninit ();
-		break;
-	default:
-		break;
+		*count = 2;
 	}
 
-	return TRUE;
+	++called;
+
+	return CKR_OK;
 }
 
-#endif /* OS_WIN32 */
-
-#endif /* P11_INIT_H */
+#ifdef OS_WIN32
+__declspec(dllexport)
+#endif
+CK_RV
+C_GetFunctionList (CK_FUNCTION_LIST_PTR_PTR list)
+{
+	mock_module_init ();
+	mock_module.C_GetFunctionList = C_GetFunctionList;
+	if (list == NULL)
+		return CKR_ARGUMENTS_BAD;
+	mock_module.C_GetSlotList= override_get_slot_list;
+	*list = &mock_module;
+	return CKR_OK;
+}

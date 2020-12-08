@@ -1,5 +1,5 @@
 project('p11-kit', 'c',
-        version: '0.23.18',
+        version: '0.23.21',
         meson_version: '>= 0.49')
 
 version_arr = meson.project_version().split('.')
@@ -42,6 +42,10 @@ endif
 
 conf.set_quoted('SHLEXT', shlext)
 conf.set_quoted('EXEEXT', exeext)
+
+if host_machine.endian() == 'big'
+  conf.set('WORDS_BIGENDIAN', 1)
+endif
 
 if get_option('debug')
   conf.set('WITH_DEBUG', 1)
@@ -125,7 +129,7 @@ if host_system != 'windows'
 
   if cc.has_header('locale.h')
     conf.set('HAVE_LOCALE_H', 1)
-    if cc.has_header_symbol('locale.h', 'locale_t')
+    if cc.has_type('locale_t', prefix: '#include <locale.h>')
       conf.set('HAVE_LOCALE_T', 1)
       if cc.has_function('newlocale', prefix: '#include <locale.h>')
         conf.set('HAVE_NEWLOCALE', 1)
@@ -221,15 +225,34 @@ int main (void) { __libc_enable_secure = 0; return 0; }
     conf.set('HAVE___LIBC_ENABLE_SECURE', 1)
   endif
 
+  vsock_availability_test_code = '''
+#include <sys/socket.h>
+#include <linux/vm_sockets.h>
+struct sockaddr_vm sa = { .svm_family = AF_VSOCK, .svm_cid = VMADDR_CID_ANY };
+'''
+  if cc.compiles(vsock_availability_test_code, name: 'vsock_test')
+    conf.set('HAVE_VSOCK', 1)
+  endif
+
   foreach h : ['sys/types.h', 'signal.h']
     foreach t : ['sighandler_t', 'sig_t', '__sighandler_t']
-      if cc.has_header_symbol(h, t)
+      if cc.has_type(t, prefix: '#include <@0@>'.format(h))
         define = 'HAVE_' + t.underscorify().to_upper()
         conf.set(define, 1)
       endif
     endforeach
   endforeach
 endif
+
+headers = [
+  'stdbool.h',
+]
+
+foreach h : headers
+  if cc.has_header(h)
+    conf.set('HAVE_' + h.underscorify().to_upper(), 1)
+  endif
+endforeach
 
 functions = [
   'asprintf',
@@ -248,6 +271,11 @@ foreach f : functions
     conf.set('HAVE_' + f.underscorify().to_upper(), 1)
   endif
 endforeach
+
+conf.set10('HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME',
+           cc.has_header_symbol('errno.h',
+                                'program_invocation_short_name',
+                                prefix: '#define _GNU_SOURCE'))
 
 conf.set10('HAVE_DECL_ASPRINTF',
            cc.has_header_symbol('stdio.h', 'asprintf',
@@ -360,4 +388,7 @@ if with_trust_module
   subdir('trust')
 endif
 subdir('doc/manual')
-subdir('po')
+if get_option('nls')
+  subdir('po')
+endif
+subdir('bash-completion')
