@@ -1243,7 +1243,7 @@ p11_rpc_transport_new (p11_virtual *virt,
 		rpc = rpc_exec_init (remote + 1, name);
 
 #ifdef OS_UNIX
-	} else if (strncmp (remote, "unix:path=/", 11) == 0) {
+	} else if (strncmp (remote, "unix:path=", 10) == 0) {
 		/* Only absolute path is supported */
 		char *path;
 

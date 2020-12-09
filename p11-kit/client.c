@@ -74,6 +74,7 @@ get_server_address (char **addressp)
 		return CKR_OK;
 	}
 
+#ifndef __OS2__
 	rv = p11_get_runtime_directory (&directory);
 	if (rv != CKR_OK)
 		return rv;
@@ -87,6 +88,11 @@ get_server_address (char **addressp)
 	free (path);
 	if (!encoded)
 		return CKR_HOST_MEMORY;
+#else
+	ret = asprintf (&encoded, "\\socket\\pkcs11-%d", random());
+	if (ret < 0)
+		return CKR_HOST_MEMORY;
+#endif
 
 	ret = asprintf (&address, "unix:path=%s", encoded);
 	free (encoded);
