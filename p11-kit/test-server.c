@@ -93,6 +93,7 @@ setup_server (void *arg)
 	}
 
 	test.directory = p11_test_directory ("p11-test-server");
+#ifndef __OS2__
 	if (asprintf (&path, "%s/p11-kit", test.directory) < 0)
 		assert_not_reached ();
 	if (mkdir (path, 0700) < 0)
@@ -101,6 +102,10 @@ setup_server (void *arg)
 		assert_not_reached ();
 	free (path);
 	unlink (test.socket_path);
+#else
+	if (asprintf (&test.socket_path, "\\socket\\pkcs11-%d", random()) < 0)
+		assert_not_reached ();
+#endif
 
 	ret = socketpair (AF_UNIX, SOCK_STREAM, 0, fds);
 	assert_num_cmp (-1, !=, ret);
