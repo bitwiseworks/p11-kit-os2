@@ -299,11 +299,22 @@ create_unix_socket (const char *address,
 	int rc, sd;
 	struct sockaddr_un sa;
 	const char *socket_file;
+#ifdef __OS2__
+	char *p;
+#endif
 
 	memset (&sa, 0, sizeof(sa));
 	sa.sun_family = AF_UNIX;
 
 	return_val_if_fail (strlen (address) < sizeof (sa.sun_path), -1);
+#ifdef __OS2__
+	/* we need \socket\anything, so change / to \ */
+	for (p = (char *)address; *p; p++)
+	{
+		if (*p == '/')
+			*p = '\\';
+	}
+#endif
 	strncpy (sa.sun_path, address, sizeof (sa.sun_path));
 	socket_file = sa.sun_path;
 
@@ -316,7 +327,11 @@ create_unix_socket (const char *address,
 	}
 
 	umask (066);
+#ifdef __OS2__
+	rc = bind (sd, (struct sockaddr *)&sa, sizeof(struct sockaddr_un));
+#else
 	rc = bind (sd, (struct sockaddr *)&sa, SUN_LEN (&sa));
+#endif
 	if (rc == -1) {
 		close (sd);
 		p11_message_err (errno, "could not bind socket %s", socket_file);
@@ -330,6 +345,7 @@ create_unix_socket (const char *address,
 		return 1;
 	}
 
+#ifndef __OS2__ // no real file for us
 	if (uid != -1 && gid != -1) {
 		rc = chown (socket_file, uid, gid);
 		if (rc == -1) {
@@ -338,6 +354,7 @@ create_unix_socket (const char *address,
 			return -1;
 		}
 	}
+#endif
 
 	return sd;
 }
@@ -850,6 +867,7 @@ main (int argc,
 	if (name == NULL) {
 		const char *runtime_dir;
 
+#ifndef __OS2__
 		if (asprintf (&name, "pkcs11-%d", getpid ()) < 0) {
 			ret = 1;
 			goto out;
@@ -875,6 +893,13 @@ main (int argc,
 		}
 
 		socket_name = p11_path_build (socket_base, name, NULL);
+#else
+		if (asprintf (&name, "\\socket\\pkcs11-%d", getpid ()) < 0) {
+			ret = 1;
+			goto out;
+		}
+		socket_name = strdup (name);
+#endif
 		free (name);
 	} else {
 		socket_name = strdup (name);
