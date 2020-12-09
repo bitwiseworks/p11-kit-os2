@@ -174,7 +174,11 @@ test_initialize (void *unused)
 	CK_FUNCTION_LIST_PTR module;
 	CK_RV rv;
 
+#ifndef __OS2__
 	module = p11_kit_module_load (P11_MODULE_PATH "/p11-kit-client" SHLEXT, 0);
+#else
+	module = p11_kit_module_load (P11_MODULE_PATH "/p11kcln" SHLEXT, 0);
+#endif
 	assert (module != NULL);
 
 	rv = p11_kit_module_initialize (module);
@@ -195,7 +199,11 @@ test_initialize_no_address (void *unused)
 	unsetenv ("P11_KIT_SERVER_ADDRESS");
 	setenv ("XDG_RUNTIME_DIR", test.directory, 1);
 
+#ifndef __OS2__
 	module = p11_kit_module_load (P11_MODULE_PATH "/p11-kit-client" SHLEXT, 0);
+#else
+	module = p11_kit_module_load (P11_MODULE_PATH "/p11kcln" SHLEXT, 0);
+#endif
 	assert (module != NULL);
 
 	rv = p11_kit_module_initialize (module);
@@ -217,7 +225,11 @@ test_open_session (void *arg)
 	CK_ULONG count;
 	CK_RV rv;
 
+#ifndef __OS2__
 	module = p11_kit_module_load (P11_MODULE_PATH "/p11-kit-client" SHLEXT, 0);
+#else
+	module = p11_kit_module_load (P11_MODULE_PATH "/p11kcln" SHLEXT, 0);
+#endif
 	assert (module != NULL);
 
 	rv = p11_kit_module_initialize (module);
@@ -249,7 +261,11 @@ test_open_session_write_protected (void *unused)
 	CK_ULONG count;
 	CK_RV rv;
 
+#ifndef __OS2__
 	module = p11_kit_module_load (P11_MODULE_PATH "/p11-kit-client" SHLEXT, 0);
+#else
+	module = p11_kit_module_load (P11_MODULE_PATH "/p11kcln" SHLEXT, 0);
+#endif
 	assert (module != NULL);
 
 	rv = p11_kit_module_initialize (module);
